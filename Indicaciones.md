@@ -52,6 +52,16 @@ git push origin feature/mi-rama
   - Solicitar revisión a uno o más miembros del equipo.
   - Resolver conflictos antes del merge.
 
+### ⚠️ IMPORTANTE: Proceso de Revisión Colaborativa
+
+**Todos los integrantes deben hacer `pull` regularmente para estar actualizados, pero NO deben hacer `merge` sin antes:**
+
+1. **Revisar el código en conjunto**: Todos los miembros del equipo deben ver y aprobar los cambios propuestos.
+2. **Crear un Pull Request**: Los cambios deben pasar por un PR formal para revisión.
+3. **Hacer merge en conjunto**: Solo después de que todos hayan revisado y aprobado el código se procede al merge.
+
+**Regla de oro:** Nunca hacer merge de forma individual sin la aprobación del equipo completo.
+
 ---
 
 ## 🎯 INTEGRACIÓN FINAL
