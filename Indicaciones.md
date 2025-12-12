@@ -25,6 +25,7 @@ Este documento define las reglas oficiales de trabajo colaborativo para el proye
 Cada integrante debe trabajar en **su propia rama personal**, creada a partir de `dev`.
 
 **Ejemplos de nombres de ramas:**
+
 ```
 feature/ratios-daniel
 feature/ui-bruno
@@ -32,6 +33,7 @@ feature/zscore-igor
 ```
 
 **Reglas:**
+
 - Las ramas personales **siempre deben basarse en `dev`**, nunca en `main`.
 - Los desarrollos se hacen exclusivamente dentro de la rama personal.
 - Los commits locales deben subirse con:
@@ -84,15 +86,9 @@ git pull origin dev
 git checkout -b feature/mi-funcionalidad
 ```
 
-### Trabajar en tu rama
+### Sincronizar tu rama con `dev` ANTES de trabajar
 
-```bash
-git add .
-git commit -m "Descripción del cambio"
-git push origin feature/mi-funcionalidad
-```
-
-### Mantener tu rama actualizada con `dev`
+⚠️ **MUY IMPORTANTE:** Antes de empezar a trabajar cada día, SIEMPRE sincroniza tu rama con los últimos cambios de `dev`:
 
 ```bash
 git checkout dev
@@ -100,6 +96,32 @@ git pull origin dev
 git checkout feature/mi-funcionalidad
 git merge dev
 ```
+
+Esto asegura que:
+- Trabajas con el código más actualizado del equipo
+- Evitas conflictos masivos al final
+- Tu rama está lista para agregar solo TU parte
+
+### Trabajar en tu rama
+
+Una vez sincronizado con `dev`, trabaja normalmente:
+
+```bash
+# Hacer cambios en tus archivos...
+git add .
+git commit -m "Descripción del cambio"
+git push origin feature/mi-funcionalidad
+```
+
+### Crear Pull Request hacia `dev`
+
+Cuando hayas terminado tu funcionalidad:
+
+1. **Sincroniza una última vez** con `dev` (repite los comandos de arriba)
+2. **Resuelve conflictos** si los hay
+3. **Haz push** de tu rama actualizada
+4. **Crea el Pull Request** en GitHub hacia `dev`
+5. **Solicita revisión** al equipo
 
 ---
 
