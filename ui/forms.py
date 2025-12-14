@@ -9,23 +9,32 @@ def financial_input_form():
     with st.form("financial_form"):
         st.markdown("### Balance General")
 
-        activo_corriente = st.text_input("Activo corriente")
-        pasivo_corriente = st.text_input("Pasivo corriente")
-        pasivo_total = st.text_input("Pasivo total")
-        patrimonio = st.text_input("Patrimonio")
+        col1, col2 = st.columns(2)
+        with col1:
+            activo_corriente = st.text_input("Activo corriente")
+            pasivo_corriente = st.text_input("Pasivo corriente")
+        with col2:
+            pasivo_total = st.text_input("Pasivo total")
+            patrimonio = st.text_input("Patrimonio")
 
         st.markdown("### Estado de Resultados")
 
-        ventas = st.text_input("Ventas")
-        utilidad_neta = st.text_input("Utilidad neta")
-        ebit = st.text_input("EBIT")
+        col3, col4 = st.columns(2)
+        with col3:
+            ventas = st.text_input("Ventas")
+            utilidad_neta = st.text_input("Utilidad neta")
+        with col4:
+            ebit = st.text_input("EBIT")
 
         st.markdown("### Otros datos")
 
-        total_assets = st.text_input("Activo total")
-        working_capital = st.text_input("Capital de trabajo")
-        retained_earnings = st.text_input("Utilidades retenidas")
-        market_value_equity = st.text_input("Valor de mercado del patrimonio")
+        col5, col6 = st.columns(2)
+        with col5:
+            total_assets = st.text_input("Activo total")
+            working_capital = st.text_input("Capital de trabajo")
+        with col6:
+            retained_earnings = st.text_input("Utilidades retenidas")
+            market_value_equity = st.text_input("Valor de mercado del patrimonio")
 
         submitted = st.form_submit_button("Calcular riesgo")
 
