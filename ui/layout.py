@@ -197,6 +197,12 @@ def mostrar_pagina_inicio() -> None:
             ### 🎯 ¿Qué es Business Risk Scanner?
             Herramienta profesional para analizar el **riesgo financiero empresarial** 
             mediante ratios financieros y el **Z-Score de Altman**.
+            
+            ### 🚀 Comenzar es fácil:
+            1. Ve a **Análisis de Empresa** en el menú lateral
+            2. Usa los botones de **datos de ejemplo** o ingresa tus propios datos
+            3. Obtén ratios financieros y Z-Score automáticamente
+            4. Visualiza gráficos interactivos y exporta resultados
             """
         )
 
@@ -206,7 +212,15 @@ def mostrar_pagina_inicio() -> None:
             "Utiliza estados financieros actualizados para un análisis preciso.",
             "info"
         )
+        
+        crear_card(
+            "🎯 Prueba Rápida",
+            "Usa los datos de ejemplo para ver las visualizaciones inmediatamente.",
+            "success"
+        )
 
+    st.markdown("---")
+    
     st.markdown("### 📊 Indicadores Analizados")
 
     indicadores = [
@@ -228,6 +242,42 @@ def mostrar_pagina_inicio() -> None:
                 """,
                 unsafe_allow_html=True
             )
+    
+    st.markdown("---")
+    
+    # Sección de comparación de ejemplos
+    st.markdown("### 📈 Ejemplos de Análisis")
+    st.markdown("Ve cómo el sistema evalúa diferentes empresas:")
+    
+    col_ej1, col_ej2 = st.columns(2)
+    
+    with col_ej1:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                    padding: 1.5rem; border-radius: 10px; color: white;">
+            <h4>✅ Empresa Saludable</h4>
+            <ul style="color: white;">
+                <li>Liquidez: <strong>2.0</strong> (Excelente)</li>
+                <li>Endeudamiento: <strong>40%</strong> (Saludable)</li>
+                <li>ROE: <strong>25%</strong> (Muy bueno)</li>
+                <li>Z-Score: <strong>~3.5</strong> (Zona segura)</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_ej2:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
+                    padding: 1.5rem; border-radius: 10px; color: white;">
+            <h4>⚠️ Empresa en Riesgo</h4>
+            <ul style="color: white;">
+                <li>Liquidez: <strong>1.04</strong> (Crítico)</li>
+                <li>Endeudamiento: <strong>80%</strong> (Muy alto)</li>
+                <li>ROE: <strong>5%</strong> (Bajo)</li>
+                <li>Z-Score: <strong>~1.2</strong> (Alto riesgo)</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 def mostrar_pagina_ayuda() -> None:

@@ -166,44 +166,44 @@ def main():
         # Formulario de entrada
         data = financial_input_form()
         
+        # Si hay datos, procesarlos inmediatamente
         if data:
-            mostrar_separador(30)
+            with st.spinner("Calculando ratios y análisis de riesgo..."):
+                try:
+                    # Calcular ratios
+                    ratios = calcular_ratios(data)
+                    
+                    # Calcular Z-Score
+                    zscore_valor = calcular_zscore(data)
+                    
+                    # Obtener clasificación de riesgo
+                    clasificacion = classify_risk(zscore_valor)
+                    
+                    # Guardar en sesión
+                    st.session_state['datos_calculados'] = {
+                        'ratios': ratios,
+                        'zscore': zscore_valor,
+                        'clasificacion': clasificacion,
+                        'datos_originales': data
+                    }
+                    
+                    st.success("✅ ¡Análisis completado exitosamente!")
+                    
+                except Exception as e:
+                    st.error(f"❌ Error al calcular: {str(e)}")
+                    st.session_state['datos_calculados'] = None
+        
+        # Mostrar resultados si están disponibles
+        if st.session_state.get('datos_calculados') is not None:
+            mostrar_separador(40)
             
-            # Botón para calcular
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                if st.button("🔍 Calcular Análisis de Riesgo", use_container_width=True, type="primary"):
-                    with st.spinner("Calculando ratios y análisis de riesgo..."):
-                        # Calcular ratios
-                        ratios = calcular_ratios(data)
-                        
-                        # Calcular Z-Score
-                        zscore_valor = calcular_zscore(data)
-                        
-                        # Obtener clasificación de riesgo
-                        clasificacion = classify_risk(zscore_valor)
-                        
-                        # Guardar en sesión
-                        st.session_state['datos_calculados'] = {
-                            'ratios': ratios,
-                            'zscore': zscore_valor,
-                            'clasificacion': clasificacion,
-                            'datos_originales': data
-                        }
-                        
-                        st.success("✅ ¡Análisis completado exitosamente!")
-            
-            # Mostrar resultados si están disponibles
-            if st.session_state['datos_calculados'] is not None:
-                mostrar_separador(40)
-                
-                # Mostrar resultados completos
-                mostrar_resultados_completos(
-                    ratios=st.session_state['datos_calculados']['ratios'],
-                    z_score=st.session_state['datos_calculados']['zscore'],
-                    clasificacion=st.session_state['datos_calculados']['clasificacion']
-                )
-        else:
+            # Mostrar resultados completos
+            mostrar_resultados_completos(
+                ratios=st.session_state['datos_calculados']['ratios'],
+                z_score=st.session_state['datos_calculados']['zscore'],
+                clasificacion=st.session_state['datos_calculados']['clasificacion']
+            )
+        elif data is None:
             # Mostrar mensaje informativo si no hay datos
             crear_card(
                 "💡 Instrucciones",
