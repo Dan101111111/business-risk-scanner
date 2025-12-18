@@ -1,15 +1,15 @@
 # Framework de aplicación web
-streamlit==1.29.0
+streamlit>=1.29.0
 
-# Análisis de datos
-pandas==2.1.4
-numpy==1.26.2
+# Análisis de datos (versiones compatibles con Python 3.13)
+pandas>=2.2.0
+numpy>=1.26.0
 
 # Visualización
-matplotlib==3.8.2
-plotly==5.18.0
-seaborn==0.13.0
+matplotlib>=3.8.0
+plotly>=5.18.0
+seaborn>=0.13.0
 
 # Utilidades
-python-dateutil==2.8.2
-openpyxl==3.1.2
+python-dateutil>=2.8.2
+openpyxl>=3.1.2

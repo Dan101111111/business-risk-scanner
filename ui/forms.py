@@ -1,40 +1,7 @@
 import streamlit as st
 import pandas as pd
 from utils.validation import validate_number, validate_positive
-
-
-def get_ejemplo_empresa_saludable():
-    """Retorna datos de ejemplo de una empresa saludable."""
-    return {
-        "activo_corriente": 400000,
-        "pasivo_corriente": 200000,
-        "pasivo_total": 400000,
-        "patrimonio": 600000,
-        "ventas": 2000000,
-        "utilidad_neta": 150000,
-        "ebit": 250000,
-        "total_assets": 1000000,
-        "working_capital": 200000,
-        "retained_earnings": 300000,
-        "market_value_equity": 650000,
-    }
-
-
-def get_ejemplo_empresa_riesgo():
-    """Retorna datos de ejemplo de una empresa en riesgo."""
-    return {
-        "activo_corriente": 250000,
-        "pasivo_corriente": 240000,
-        "pasivo_total": 800000,
-        "patrimonio": 200000,
-        "ventas": 800000,
-        "utilidad_neta": 10000,  # Cambié de -50000 a 10000 para evitar negativos
-        "ebit": 30000,
-        "total_assets": 1000000,
-        "working_capital": 10000,
-        "retained_earnings": 50000,
-        "market_value_equity": 220000,
-    }
+from utils.sample_data import get_ejemplo_empresa_saludable, get_ejemplo_empresa_riesgo
 
 
 def financial_input_form():
@@ -92,11 +59,23 @@ def financial_input_form():
                 value=str(datos_precargados.get('total_assets', '')))
             working_capital = st.text_input("Capital de trabajo",
                 value=str(datos_precargados.get('working_capital', '')))
-        with col6:
             retained_earnings = st.text_input("Utilidades retenidas",
                 value=str(datos_precargados.get('retained_earnings', '')))
+            inventarios = st.text_input("Inventarios (saldo)",
+                value=str(datos_precargados.get('inventarios', '')),
+                help="Dejar vacío para estimar como 30% del activo corriente")
+        with col6:
             market_value_equity = st.text_input("Valor de mercado del patrimonio",
                 value=str(datos_precargados.get('market_value_equity', '')))
+            inventario_promedio = st.text_input("Inventario promedio",
+                value=str(datos_precargados.get('inventario_promedio', '')),
+                help="Dejar vacío para usar inventarios como proxy")
+            costo_ventas = st.text_input("Costo de ventas",
+                value=str(datos_precargados.get('costo_ventas', '')),
+                help="Dejar vacío para estimar como 60% de ventas")
+            total_liabilities = st.text_input("Pasivo total (para Z-Score)",
+                value=str(datos_precargados.get('total_liabilities', '')),
+                help="Dejar vacío para usar pasivo_total")
 
         submitted = st.form_submit_button("Calcular riesgo")
     
@@ -108,7 +87,8 @@ def financial_input_form():
         return None
 
     # Validación
-    fields = {
+    # Campos obligatorios
+    campos_obligatorios = {
         "activo_corriente": activo_corriente,
         "pasivo_corriente": pasivo_corriente,
         "pasivo_total": pasivo_total,
@@ -121,17 +101,52 @@ def financial_input_form():
         "retained_earnings": retained_earnings,
         "market_value_equity": market_value_equity,
     }
+    
+    # Campos opcionales (pueden estar vacíos)
+    campos_opcionales = {
+        "inventarios": inventarios,
+        "inventario_promedio": inventario_promedio,
+        "costo_ventas": costo_ventas,
+        "total_liabilities": total_liabilities,
+    }
+    
+    # Campos que NO pueden ser negativos (>=0)
+    campos_no_negativos = {
+        "activo_corriente", "pasivo_corriente", "pasivo_total", 
+        "patrimonio", "ventas", "total_assets", "market_value_equity",
+        "inventarios", "inventario_promedio", "costo_ventas", "total_liabilities"
+    }
+    
+    # Campos que SÍ pueden ser negativos
+    # (utilidad_neta, ebit, working_capital, retained_earnings)
 
     data = {}
 
-    for name, value in fields.items():
+    # Validar campos obligatorios
+    for name, value in campos_obligatorios.items():
         value = validate_number(value, name)
         if value is None:
             return None
-        value = validate_positive(value, name)
-        if value is None:
-            return None
+        # Solo validar positividad si el campo está en campos_no_negativos
+        if name in campos_no_negativos:
+            value = validate_positive(value, name)
+            if value is None:
+                return None
         data[name] = value
+    
+    # Validar campos opcionales (si están llenos)
+    for name, value in campos_opcionales.items():
+        if value and str(value).strip():  # Si el usuario ingresó algo
+            value = validate_number(value, name)
+            if value is None:
+                return None
+            # Solo validar positividad si el campo está en campos_no_negativos
+            if name in campos_no_negativos:
+                value = validate_positive(value, name)
+                if value is None:
+                    return None
+            data[name] = value
+        # Si está vacío, no agregarlo al diccionario (el backend usará aproximaciones)
 
     st.success("Datos validados correctamente")
 

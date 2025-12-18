@@ -26,6 +26,34 @@ class TestValidationUtils(unittest.TestCase):
         self.assertIsNone(value)
         mock_error.assert_called_once()
 
+    @patch("utils.validation.st.error")
+    def test_validate_number_with_commas(self, mock_error):
+        """Prueba que acepta números con comas."""
+        value = validate_number("100,000", "ventas")
+        self.assertEqual(value, 100000.0)
+        mock_error.assert_not_called()
+
+    @patch("utils.validation.st.error")
+    def test_validate_number_with_spaces(self, mock_error):
+        """Prueba que acepta números con espacios."""
+        value = validate_number("100 000", "ventas")
+        self.assertEqual(value, 100000.0)
+        mock_error.assert_not_called()
+
+    @patch("utils.validation.st.error")
+    def test_validate_number_with_commas_and_spaces(self, mock_error):
+        """Prueba que acepta números con comas y espacios."""
+        value = validate_number(" 1,000,000 ", "activo_total")
+        self.assertEqual(value, 1000000.0)
+        mock_error.assert_not_called()
+
+    @patch("utils.validation.st.error")
+    def test_validate_number_empty_string(self, mock_error):
+        """Prueba que rechaza strings vacíos."""
+        value = validate_number("", "ventas")
+        self.assertIsNone(value)
+        mock_error.assert_called_once()
+
     # ---------- validate_positive ----------
 
     @patch("utils.validation.st.error")

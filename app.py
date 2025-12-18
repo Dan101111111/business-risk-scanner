@@ -6,6 +6,7 @@ financieros y el Z-Score de Altman.
 """
 
 import streamlit as st
+from typing import Optional
 from ui.forms import financial_input_form
 from ui.layout import (
     configurar_pagina,
@@ -67,7 +68,7 @@ def calcular_ratios(data: dict) -> dict:
         data['pasivo_corriente']
     )
     
-    # Calcular inventarios si no están (asumimos 30% del activo corriente)
+    # Separar inventarios (saldo) para prueba ácida
     inventarios = data.get('inventarios', data['activo_corriente'] * 0.3)
     
     ratios['prueba_acida'] = ratio_prueba_acida(
@@ -98,7 +99,8 @@ def calcular_ratios(data: dict) -> dict:
         data['patrimonio']
     )
     
-    ratios['margen_utilidad'] = margen_neto(
+    # Cambio de margen_utilidad a margen_neto
+    ratios['margen_neto'] = margen_neto(
         data['utilidad_neta'],
         data['ventas']
     )
@@ -109,18 +111,19 @@ def calcular_ratios(data: dict) -> dict:
         activo_total
     )
     
-    # Calcular costo de ventas si no está (asumimos 60% de ventas)
+    # Separar inventario_promedio para rotación de inventarios
+    inventario_promedio = data.get('inventario_promedio', inventarios)
     costo_ventas = data.get('costo_ventas', data['ventas'] * 0.6)
     
     ratios['rotacion_inventarios'] = rotacion_inventarios(
         costo_ventas,
-        inventarios
+        inventario_promedio
     )
     
     return ratios
 
 
-def calcular_zscore(data: dict) -> float:
+def calcular_zscore(data: dict) -> Optional[float]:
     """
     Calcula el Z-Score de Altman a partir de los datos ingresados.
     
@@ -128,20 +131,21 @@ def calcular_zscore(data: dict) -> float:
         data: Diccionario con los datos financieros
         
     Returns:
-        Valor del Z-Score
+        Valor del Z-Score o None si hay error en el cálculo
     """
     # Mapear campos del formulario a los esperados por z_score
     activo_total = data.get('total_assets', data.get('activo_total', 0))
     working_capital = data.get('working_capital', data['activo_corriente'] - data['pasivo_corriente'])
     retained_earnings = data.get('retained_earnings', data.get('utilidades_retenidas', 0))
     market_value_equity = data.get('market_value_equity', data.get('valor_mercado_patrimonio', data['patrimonio']))
+    total_liabilities = data.get('total_liabilities', data['pasivo_total'])
     
     return z_score(
         working_capital=working_capital,
         retained_earnings=retained_earnings,
         ebit=data['ebit'],
         market_value_equity=market_value_equity,
-        total_liabilities=data['pasivo_total'],
+        total_liabilities=total_liabilities,
         sales=data['ventas'],
         total_assets=activo_total
     )

@@ -34,7 +34,7 @@ def mostrar_seccion_ratios(ratios: Dict[str, Optional[float]]) -> None:
         "💰 Rentabilidad": {
             "ROA (Rentabilidad sobre Activos)": ratios.get("roa"),
             "ROE (Rentabilidad sobre Patrimonio)": ratios.get("roe"),
-            "Margen de Utilidad": ratios.get("margen_utilidad"),
+            "Margen de Utilidad": ratios.get("margen_neto"),
         },
         "⚙️ Eficiencia": {
             "Rotación de Activos": ratios.get("rotacion_activos"),
@@ -284,7 +284,7 @@ def crear_grafico_barras_ratios(ratios: Dict[str, Optional[float]]) -> None:
         rentabilidad_data = {
             "ROA": ratios.get("roa"),
             "ROE": ratios.get("roe"),
-            "Margen de Utilidad": ratios.get("margen_utilidad"),
+            "Margen de Utilidad": ratios.get("margen_neto"),
         }
         crear_barras_categoria(rentabilidad_data, "Ratios de Rentabilidad (%)", multiplicar_100=True)
     
@@ -400,18 +400,43 @@ def crear_radar_chart(ratios: Dict[str, Optional[float]]) -> None:
         r=valores_norm,
         theta=categorias,
         fill='toself',
-        name='Empresa'
+        name='Empresa',
+        fillcolor='rgba(31, 119, 180, 0.5)',  # Azul semi-transparente
+        line=dict(color='rgb(31, 119, 180)', width=3)  # Línea azul sólida
     ))
+    
+    # Verificar si hay modo oscuro activo
+    dark_mode = st.session_state.get("dark_mode", True)
     
     fig.update_layout(
         polar=dict(
             radialaxis=dict(
                 visible=True,
-                range=[0, 10]
-            )
+                range=[0, 10],
+                showticklabels=True,
+                tickfont=dict(
+                    size=12,
+                    color='#333333' if not dark_mode else '#FFFFFF'  # Texto oscuro en modo claro, blanco en modo oscuro
+                ),
+                gridcolor='rgba(128, 128, 128, 0.3)',  # Líneas de cuadrícula grises semi-transparentes
+            ),
+            angularaxis=dict(
+                tickfont=dict(
+                    size=13,
+                    color='#1f77b4',  # Azul para las categorías
+                    family='Arial Black'
+                ),
+                gridcolor='rgba(128, 128, 128, 0.3)'
+            ),
+            bgcolor='rgba(240, 240, 240, 0.3)' if not dark_mode else 'rgba(30, 30, 30, 0.3)'  # Fondo gris claro
         ),
         showlegend=False,
-        height=500
+        height=500,
+        paper_bgcolor='rgba(0,0,0,0)',  # Fondo transparente
+        font=dict(
+            color='#333333' if not dark_mode else '#FFFFFF',
+            size=12
+        )
     )
     
     st.plotly_chart(fig, use_container_width=True)
@@ -591,7 +616,16 @@ def mostrar_resultados_completos(ratios: Dict[str, Optional[float]],
     with col1:
         # Preparar datos para CSV
         datos_export = preparar_datos_exportacion(ratios, z_score, clasificacion)
-        csv = datos_export.to_csv(index=False)
+        
+        # Generar CSV con formato compatible para Excel en español
+        # Usa punto y coma como separador y coma decimal
+        csv = datos_export.to_csv(
+            index=False,
+            sep=';',  # Separador para Excel en español
+            decimal=',',  # Coma decimal para formato español
+            encoding='utf-8-sig'  # UTF-8 con BOM para Excel
+        )
+        
         st.download_button(
             label="📄 Descargar CSV",
             data=csv,
@@ -600,14 +634,14 @@ def mostrar_resultados_completos(ratios: Dict[str, Optional[float]],
         )
     
     with col2:
-        st.info("💡 Puedes descargar los resultados en formato CSV para análisis posterior.")
+        st.info("💡 El archivo CSV está optimizado para abrirse correctamente en Excel.")
 
 
 def preparar_datos_exportacion(ratios: Dict[str, Optional[float]], 
                                z_score: Optional[float], 
                                clasificacion: str) -> pd.DataFrame:
     """
-    Prepara un DataFrame con todos los datos para exportación.
+    Prepara un DataFrame con todos los datos para exportación en formato legible.
     
     Args:
         ratios: Diccionario con los ratios
@@ -615,27 +649,73 @@ def preparar_datos_exportacion(ratios: Dict[str, Optional[float]],
         clasificacion: Clasificación de riesgo
         
     Returns:
-        DataFrame con los datos organizados
+        DataFrame con los datos organizados para Excel
     """
     datos = []
     
-    # Agregar ratios
-    for nombre, valor in ratios.items():
+    # Mapeo de nombres técnicos a nombres descriptivos
+    nombres_ratios = {
+        "liquidez": "Ratio de Liquidez",
+        "prueba_acida": "Prueba Ácida",
+        "endeudamiento": "Ratio de Endeudamiento",
+        "apalancamiento": "Ratio de Apalancamiento",
+        "roa": "ROA (Rentabilidad sobre Activos)",
+        "roe": "ROE (Rentabilidad sobre Patrimonio)",
+        "margen_neto": "Margen Neto",
+        "rotacion_activos": "Rotación de Activos",
+        "rotacion_inventarios": "Rotación de Inventarios"
+    }
+    
+    # Categorías para organizar mejor
+    categorias = {
+        "liquidez": "Liquidez",
+        "prueba_acida": "Liquidez",
+        "endeudamiento": "Solvencia",
+        "apalancamiento": "Solvencia",
+        "roa": "Rentabilidad",
+        "roe": "Rentabilidad",
+        "margen_neto": "Rentabilidad",
+        "rotacion_activos": "Eficiencia",
+        "rotacion_inventarios": "Eficiencia"
+    }
+    
+    # Agregar ratios con formato mejorado
+    for nombre_tecnico, valor in ratios.items():
+        nombre_legible = nombres_ratios.get(nombre_tecnico, nombre_tecnico.replace("_", " ").title())
+        categoria = categorias.get(nombre_tecnico, "Otros")
+        
+        # Formatear el valor
+        if valor is not None:
+            # Convertir a porcentaje si es un ratio de rentabilidad o endeudamiento
+            if nombre_tecnico in ["roa", "roe", "margen_neto", "endeudamiento"]:
+                valor_formateado = f"{valor * 100:.2f}%"
+            else:
+                valor_formateado = f"{valor:.4f}"
+        else:
+            valor_formateado = "N/A"
+        
         datos.append({
-            "Categoría": "Ratio",
-            "Indicador": nombre,
-            "Valor": valor if valor is not None else "N/A"
+            "Categoría": categoria,
+            "Indicador": nombre_legible,
+            "Valor": valor_formateado
         })
+    
+    # Agregar línea separadora
+    datos.append({
+        "Categoría": "---",
+        "Indicador": "---",
+        "Valor": "---"
+    })
     
     # Agregar Z-Score
     datos.append({
-        "Categoría": "Z-Score",
-        "Indicador": "Valor Z-Score",
-        "Valor": z_score if z_score is not None else "N/A"
+        "Categoría": "Evaluación de Riesgo",
+        "Indicador": "Z-Score de Altman",
+        "Valor": f"{z_score:.3f}" if z_score is not None else "N/A"
     })
     
     datos.append({
-        "Categoría": "Z-Score",
+        "Categoría": "Evaluación de Riesgo",
         "Indicador": "Clasificación",
         "Valor": clasificacion
     })

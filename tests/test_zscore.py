@@ -15,7 +15,9 @@ class TestZScore(unittest.TestCase):
             sales=800000,
             total_assets=1000000
         )
-        self.assertAlmostEqual(z, 3.246, places=3)
+        # Z = 1.2×0.2 + 1.4×0.15 + 3.3×0.12 + 0.6×1.667 + 1.0×0.8
+        # Z = 0.24 + 0.21 + 0.396 + 1.0 + 0.8 = 2.646
+        self.assertAlmostEqual(z, 2.646, places=3)
 
     def test_zscore_low(self):
         """Z-score bajo, empresa en riesgo."""
@@ -28,7 +30,9 @@ class TestZScore(unittest.TestCase):
             sales=10000,
             total_assets=100000
         )
-        self.assertAlmostEqual(z, 1.298, places=3)
+        # Z = 1.2×0.1 + 1.4×0.05 + 3.3×0.03 + 0.6×0.4 + 1.0×0.1
+        # Z = 0.12 + 0.07 + 0.099 + 0.24 + 0.1 = 0.629
+        self.assertAlmostEqual(z, 0.629, places=3)
 
     def test_zscore_zero_assets(self):
         """Si total_assets = 0 debe devolver None."""
